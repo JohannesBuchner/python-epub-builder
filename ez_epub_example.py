@@ -25,7 +25,7 @@ def parseBook(path, startLineNum, endLineNum):
                 section.paragraphs.append(paragraph)
                 paragraph = ''
         else:
-            paragraph += '' + line
+            paragraph += ' ' + line
     if paragraph != '':
         section.paragraphs.append(paragraph)
     return sections
