@@ -178,7 +178,7 @@ class EpubBook:
         return sorted(self.spine)
     
     def addSpineItem(self, item, linear = True, order = None):
-        #assert item.destPath in self.htmlItems
+        assert item.destPath in self.htmlItems
         if order == None:
             order = (max(order for order, _, _ in self.spine) if self.spine else 0) + 1
         self.spine.append((order, item, linear))
@@ -325,7 +325,6 @@ def test():
     n12 = book.addHtml('', '4.html', getMinimalHtml('Section 1.2'))
     n2 = book.addHtml('', '5.html', getMinimalHtml('Chapter 2'))
 
-    book.addSpineItem(book.coverImage)
     book.addSpineItem(n1)
     book.addSpineItem(n11)
     book.addSpineItem(n111)
