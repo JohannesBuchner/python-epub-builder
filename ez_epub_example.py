@@ -13,26 +13,29 @@ def parseBook(path, startLineNum, endLineNum):
         lineNum += 1
         if lineNum < startLineNum:
             continue
-        if lineNum > endLineNum:
+        if endLineNum > 0 and lineNum > endLineNum:
             break
         line = line.strip()
         if PATTERN.match(line):
             section = ez_epub.Section()
+            section.css = """.em { font-style: italic; }"""
             section.title = line
             sections.append(section)
         elif line == '':
             if paragraph != '':
-                section.paragraphs.append(paragraph)
+                section.text.append(paragraph)
                 paragraph = ''
         else:
-            paragraph += ' ' + line
+            if paragraph != '':
+                paragraph += ' '
+            paragraph += line
     if paragraph != '':
-        section.paragraphs.append(paragraph)
+        section.text.append(paragraph)
     return sections
 
 if __name__ == '__main__':
-    title = 'Pride and Prejudice'
-    author = 'Jane Austen'
-    sections = parseBook(r'D:\epub\1342.txt', 38, 13061)
-    ez_epub.makeBook(title, [author], sections, r'D:\epub\%s' % title)
-            
+    book = ez_epub.Book()
+    book.title = 'Pride and Prejudice'
+    book.authors = ['Jane Austen']
+    book.sections = parseBook(r'D:\epub\1342.txt', 38, 13061)
+    book.make(r'D:\epub\%s' % book.title)
