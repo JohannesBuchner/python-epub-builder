@@ -1,0 +1,25 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://genshi.edgewall.org/">
+<head>
+  <title>${chapter.title}</title>
+  <style type="text/css">
+.smaller {
+  font-size: 75%;
+}
+.larger {
+  font-size: 125%;
+}
+p {
+  text-indent: 2em;
+}
+p.no-indent {
+  text-indent: 0;
+}
+  </style>
+</head>
+<body>
+  <p class="${'section ' + section.cssClass if section.cssClass else 'section'}" py:for="section in chapter.getAllSections()">
+    <span class="${snippet.format if snippet.format else None}" py:for="snippet in section.getTextFormatSnippets()">${snippet.text}</span>
+  </p>
+</body>
+</html>

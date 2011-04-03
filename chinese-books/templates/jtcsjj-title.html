@@ -1,0 +1,22 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://genshi.edgewall.org/">
+<head>
+  <title></title>
+  <style type="text/css">
+p {
+  text-align: center;
+}
+.title {
+  font-size: 200%;
+}
+.author {
+  font-size: 125%;
+}
+  </style>
+</head>
+<body>
+	<p class="$cls" py:for="cls, line in lines">
+		$line
+	</p>
+</body>
+</html>
