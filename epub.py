@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2012, Bin Tan
+# This file is distributed under the BSD Licence. See python-epub-builder-license.txt for details.
+
 import itertools
 import mimetypes
 import os

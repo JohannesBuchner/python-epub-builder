@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--!
+Copyright (c) 2012, Bin Tan
+This file is distributed under the BSD Licence. See python-epub-builder-license.txt for details.
+-->
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"
     xmlns:py="http://genshi.edgewall.org/"
     version="2005-1">
