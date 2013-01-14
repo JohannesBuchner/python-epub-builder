@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import uuid
 import zipfile
+import progressbar
 from genshi.template import TemplateLoader
 from lxml import etree
 
@@ -59,6 +60,7 @@ class EpubBook:
         self.imageItems = {}
         self.htmlItems = {}
         self.cssItems = {}
+        self.scriptItems = {}
 
         self.coverImage = None
         self.titlePage = None
@@ -102,8 +104,16 @@ class EpubBook:
     def getCssItems(self):
         return sorted(self.cssItems.values(), key = lambda x : x.id)
     
+    def getScriptItems(self):
+        return sorted(self.scriptItems.values(), key = lambda x : x.id)
+    
     def getAllItems(self):
-        return sorted(itertools.chain(self.imageItems.values(), self.htmlItems.values(), self.cssItems.values()), key = lambda x : x.id)
+        print '   Items in ebook:'
+        print '     HTML:', len(self.htmlItems)
+        print '     CSS:', len(self.cssItems)
+        print '     JS:', len(self.scriptItems)
+        print '     Images:', len(self.imageItems)
+        return sorted(itertools.chain(self.imageItems.values(), self.htmlItems.values(), self.cssItems.values(), self.scriptItems.values()), key = lambda x : x.id)
         
     def addImage(self, srcPath, destPath):
         item = EpubItem()
@@ -111,9 +121,11 @@ class EpubBook:
         item.srcPath = srcPath
         item.destPath = destPath
         item.mimeType = mimetypes.guess_type(destPath)[0]
-        assert item.destPath not in self.imageItems
-        self.imageItems[destPath] = item
-        return item
+        #assert item.destPath not in self.imageItems
+        if item.destPath not in self.imageItems:
+	        #print '  + adding Image', srcPath, item.id
+        	self.imageItems[item.destPath] = item
+        return self.imageItems[item.destPath]
     
     def addHtmlForImage(self, imageItem):
         tmpl = self.loader.load('image.html')
@@ -121,16 +133,18 @@ class EpubBook:
         html = stream.render('xhtml', doctype = 'xhtml11', drop_xml_decl = False)
         return self.addHtml('', '%s.html' % imageItem.destPath, html)
     
-    def addHtml(self, srcPath, destPath, html):
+    def addHtml(self, srcPath, destPath, html = None):
         item = EpubItem()
         item.id = 'html_%d' % (len(self.htmlItems) + 1)
         item.srcPath = srcPath
         item.destPath = destPath
-        item.html = html
+        if html is not None:
+            item.html = html
         item.mimeType = 'application/xhtml+xml'
-        assert item.destPath not in self.htmlItems
-        self.htmlItems[item.destPath] = item
-        return item
+        if item.destPath not in self.htmlItems:
+	        #print '  + adding Page', srcPath, item.id
+        	self.htmlItems[item.destPath] = item
+        return self.htmlItems[item.destPath]
     
     def addCss(self, srcPath, destPath):
         item = EpubItem()
@@ -138,9 +152,22 @@ class EpubBook:
         item.srcPath = srcPath
         item.destPath = destPath
         item.mimeType = 'text/css'
-        assert item.destPath not in self.cssItems
-        self.cssItems[item.destPath] = item
-        return item
+        #assert item.destPath not in self.cssItems
+        if item.destPath not in self.cssItems:
+	        #print '  + adding CSS', srcPath, item.id
+        	self.cssItems[item.destPath] = item
+        return self.cssItems[item.destPath]
+    
+    def addScript(self, srcPath, destPath):
+        item = EpubItem()
+        item.id = 'js_%d' % (len(self.scriptItems) + 1)
+        item.srcPath = srcPath
+        item.destPath = destPath
+        item.mimeType = 'text/javascript'
+        if item.destPath not in self.scriptItems:
+	        #print '  + adding JS', srcPath, item.id
+        	self.scriptItems[item.destPath] = item
+        return self.scriptItems[item.destPath]
     
     def addCover(self, srcPath):
         assert not self.coverImage
@@ -246,15 +273,25 @@ class EpubBook:
         fout.close()
     
     def __writeItems(self):
-        for item in self.getAllItems():
-            print item.id, item.destPath
+        items = self.getAllItems()
+        pbar = progressbar.ProgressBar(
+        	widgets=[progressbar.Percentage(), progressbar.Counter('%5d'), 
+        	progressbar.Bar(), progressbar.ETA()],
+        	maxval=len(items)
+        ).start()
+        for item in items:
+            #print item.id, item.destPath
+            outname = os.path.join(self.rootDir, 'OEBPS', item.destPath)
             if item.html:
-                fout = open(os.path.join(self.rootDir, 'OEBPS', item.destPath), 'w')
+                print '   writing html to %s' % (outname)
+                fout = open(outname, 'w')
                 fout.write(item.html)
                 fout.close()
             else:
-                shutil.copyfile(item.srcPath, os.path.join(self.rootDir, 'OEBPS', item.destPath))
-
+                #print '   copying %s --> %s' % (item.srcPath, outname)
+                shutil.copyfile(item.srcPath, outname)
+        	pbar.update(pbar.currval + 1)
+        pbar.finish()
 
     def __writeMimeType(self):
         fout = open(os.path.join(self.rootDir, 'mimetype'), 'w')
