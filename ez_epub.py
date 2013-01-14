@@ -12,7 +12,7 @@ class Section:
         self.css = ''
         self.text = []
         self.templateFileName = 'ez-section.html'
-
+        
 class Book:
     
     def __init__(self):
@@ -23,16 +23,12 @@ class Book:
         self.lang = 'en-US'
         self.sections = []
         self.templateLoader = TemplateLoader('templates')
-    
+      
     def __addSection(self, section, id, depth):
         if depth > 0:
-            if hasattr(section, 'filename'):
-                item = self.impl.addHtml(section.filename, '%s.html' % id)
-            else:
-                if not hasattr(section, 'html'):
-                    stream = self.templateLoader.load(section.templateFileName).generate(section = section)
-                    section.html = stream.render('xhtml', doctype = 'xhtml11', drop_xml_decl = False)
-                item = self.impl.addHtml('', '%s.html' % id, section.html)
+            stream = self.templateLoader.load(section.templateFileName).generate(section = section)
+            html = stream.render('xhtml', doctype = 'xhtml11', drop_xml_decl = False)
+            item = self.impl.addHtml('', '%s.html' % id, html)
             self.impl.addSpineItem(item)
             self.impl.addTocMapNode(item.destPath, section.title, depth)
             id += '.'
@@ -56,5 +52,4 @@ class Book:
         self.__addSection(root, 's', 0)
         self.impl.createBook(outputDir)
         self.impl.createArchive(outputDir, outputFile)
-        #self.impl.checkEpub('epubcheck-1.0.5.jar', outputFile)
-
+        self.impl.checkEpub('epubcheck-1.0.5.jar', outputFile)
